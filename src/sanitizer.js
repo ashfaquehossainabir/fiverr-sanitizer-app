@@ -1,3 +1,6 @@
+/* ===============================
+   RESERVED KEYWORDS
+================================ */
 export const RESERVED_KEYWORDS = [
   "contact",
   "paid",
@@ -33,43 +36,77 @@ export const RESERVED_KEYWORDS = [
   "phone"
 ];
 
-// Replacement keywords
+/* ===============================
+   SAFE WORD REPLACEMENTS
+================================ */
 const REPLACEMENTS = {
   review: "check",
   feedback: "response"
 };
 
-// URL detection
-const URL_REGEX =
-  /\bhttps?:\/\/[^\s]+|\bwww\.[^\s]+|\b[a-z0-9-]+\.(com|net|org|io|co|me|info)\b/gi;
+/* ===============================
+   REGEX
+================================ */
+const EMAIL_REGEX =
+  /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 
-// Insert "_" after first character
+const PHONE_REGEX = /\b\d{10,15}\b/g;
+
+const URL_REGEX = /\bhttps?:\/\/[^\s]+/gi;
+
+/* ===============================
+   HELPERS
+================================ */
 function sanitizeWord(word) {
   if (!word || word.length < 2) return word;
   if (word[1] === "_") return word;
   return `${word[0]}_${word.slice(1)}`;
 }
 
+function formatPhoneNumber(phone) {
+  return phone.split("").join("-");
+}
+
+/* ===============================
+   MAIN SANITIZER
+================================ */
 export function sanitizeText(text) {
-  if (!text) return text;
+  if (!text) {
+    return {
+      text: "",
+      emailRemoved: false
+    };
+  }
 
   let sanitized = text;
-  const urls = [];
+  let emailRemoved = false;
 
-  // Remove URLs
-  sanitized = sanitized.replace(URL_REGEX, (match) => {
-    const placeholder = `__URL_${urls.length}__`;
-    urls.push(match);
-    return placeholder;
+  /* ===============================
+     REMOVE EMAILS (KEEP NEWLINES)
+  ================================ */
+  sanitized = sanitized.replace(EMAIL_REGEX, () => {
+    emailRemoved = true;
+    return "";
   });
 
-  // Replace mapped keywords
+  /* ===============================
+     FORMAT PHONE NUMBERS
+  ================================ */
+  sanitized = sanitized.replace(PHONE_REGEX, (match) =>
+    formatPhoneNumber(match)
+  );
+
+  /* ===============================
+     REPLACE SAFE WORDS
+  ================================ */
   Object.keys(REPLACEMENTS).forEach((key) => {
     const regex = new RegExp(`\\b${key}\\b`, "gi");
     sanitized = sanitized.replace(regex, REPLACEMENTS[key]);
   });
 
-  // Sanitize reserved keywords
+  /* ===============================
+     SANITIZE RESERVED KEYWORDS
+  ================================ */
   RESERVED_KEYWORDS.forEach((keyword) => {
     const regex = new RegExp(`\\b${keyword}\\b`, "gi");
     sanitized = sanitized.replace(regex, (match) =>
@@ -77,10 +114,20 @@ export function sanitizeText(text) {
     );
   });
 
-  // Restore URLs
-  urls.forEach((url, index) => {
-    sanitized = sanitized.replace(`__URL_${index}__`, url);
-  });
+  /* ===============================
+     REMOVE UNSAFE SYMBOLS
+  ================================ */
+  sanitized = sanitized.replace(/[<>()[\]{}"'`;]/g, "");
 
-  return sanitized;
+  /* ===============================
+     CLEAN SPACES (NOT NEWLINES)
+  ================================ */
+  sanitized = sanitized
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/ +([.,!?])/g, "$1");
+
+  return {
+    text: sanitized,
+    emailRemoved
+  };
 }
