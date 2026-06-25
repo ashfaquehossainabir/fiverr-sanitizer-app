@@ -4,6 +4,8 @@ import { sanitizeText } from "./sanitizer";
 import { getGrammarSuggestions } from "./grammarSuggestions";
 import { getReservedWarnings } from "./utility/reservedWarnings.js";
 
+const URL_REGEX = /\bhttps?:\/\/[^\s]+/gi;
+
 export default function App() {
 
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -32,12 +34,13 @@ export default function App() {
   const hasRealText = normalizedInput.trim().length > 0;
 
   /* -------------------- SANITIZE -------------------- */
-  
+
   const { text: sanitized, emailRemoved } = hasRealText
   ? sanitizeText(normalizedInput)
   : { text: "", emailRemoved: false };
 
   /* -------------------- COUNTERS -------------------- */
+
   const hasRealCharacter = /[a-zA-Z0-9]/.test(input);
   const charCount = hasRealCharacter ? input.length : 0;
 
@@ -205,7 +208,10 @@ export default function App() {
       return;
     }
 
-    const warnings = getReservedWarnings(normalizedInput);
+    // Remove URLs before checking reserved keywords
+    const textWithoutUrls = normalizedInput.replace(URL_REGEX, "");
+
+    const warnings = getReservedWarnings(textWithoutUrls);
     setReservedWarnings(warnings);
   }, [debouncedInput]);
 
