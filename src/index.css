@@ -1,3 +1,6 @@
+/* Import Jetbrains Mono Font */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 /* RESET */
 * {
   box-sizing: border-box;
@@ -56,6 +59,12 @@ h1 {
 label {
   font-weight: 600;
   margin-bottom: 8px;
+}
+
+/* Time Text Font */
+.clock-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 /* INPUT */
