@@ -563,6 +563,13 @@ p.date-box {
   text-decoration: none;
 }
 
+/* Laptop */
+@media (max-width: 1200px) {
+  .time-comp {
+    display: none;
+  }
+}
+
 /* MOBILE */
 @media (max-width: 768px) {
   .editor-row {
@@ -576,9 +583,5 @@ p.date-box {
   h1.headline-text {
     margin-bottom: 20px;
     font-size: 28px;
-  }
-
-  .time-comp {
-    display: none;
   }
 }
