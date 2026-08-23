@@ -125,6 +125,11 @@ export function sanitizeText(text) {
   });
 
   /* ===============================
+     REMOVE DOUBLE ASTERISKS (**)
+  ================================ */
+  sanitized = sanitized.replace(/\*\*/g, "");
+
+  /* ===============================
      REMOVE UNSAFE SYMBOLS
   ================================ */
   sanitized = sanitized.replace(/[<>()[\]{}"`;]/g, "");
