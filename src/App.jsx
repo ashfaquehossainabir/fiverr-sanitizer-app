@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { sanitizeText } from "./sanitizer";
 import { getGrammarSuggestions } from "./grammarSuggestions";
 import { getReservedWarnings } from "./utility/reservedWarnings.js";
+import { highlightSanitizedText, escapeHtml } from "./utility/highlightSanitized.js";
 
 const URL_REGEX = /\bhttps?:\/\/[^\s]+/gi;
 
@@ -172,7 +173,8 @@ export default function App() {
   //   text.replace(/(\b\w_\w+\b)/g, `<span class="highlight">$1</span>`);
 
   const highlightSanitized = (text) => {
-    let highlightedText = text;
+    // Escape first so user input can never inject HTML into the preview
+    let highlightedText = escapeHtml(text);
 
     // Highlight spelling issues
     grammarSuggestions.forEach((item) => {
@@ -191,11 +193,8 @@ export default function App() {
       `<span class="phone-highlight">$&</span>`
     );
 
-    // Highlight sanitized reserved words
-    highlightedText = highlightedText.replace(
-      /(\b\w_\w+\b)/g,
-      `<span class="highlight">$1</span>`
-    );
+    // Highlight sanitized reserved words (c_ontact, em-ail, ma-il, ...)
+    highlightedText = highlightSanitizedText(highlightedText);
 
     return highlightedText;
   };
@@ -346,7 +345,7 @@ export default function App() {
                 className="preview-box"
                 dangerouslySetInnerHTML={{
                   __html: isTranslated
-                    ? translatedText
+                    ? escapeHtml(translatedText)
                     : hasRealText
                     ? highlightSanitized(sanitized)
                     : "Nothing to preview yet..."
